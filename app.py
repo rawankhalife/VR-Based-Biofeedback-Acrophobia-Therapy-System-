@@ -8,21 +8,103 @@ import plotly.express as px
 
 st.set_page_config(page_title="VR Biofeedback Dashboard", layout="wide")
 
+# ── Custom CSS for upload screen ───────────────────────────────────────────────
+upload_css = """
+<style>
+.upload-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 500px;
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.upload-card {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    border: 2px dashed #4a90e2;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    max-width: 500px;
+    width: 100%;
+}
+
+.upload-icon {
+    font-size: 64px;
+    margin-bottom: 1.5rem;
+    opacity: 0.8;
+}
+
+.upload-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 0.5rem 0;
+}
+
+.upload-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0 0 2rem 0;
+}
+
+.upload-hint {
+    font-size: 14px;
+    color: #999;
+    margin-top: 2rem;
+    line-height: 1.6;
+}
+
+.upload-hint strong {
+    color: #4a90e2;
+}
+</style>
+"""
+
 # ── Upload screen ──────────────────────────────────────────────────────────────
 if "session_data" not in st.session_state:
-    st.title("VR Biofeedback – Patient Session Dashboard")
-    st.markdown("Upload a session JSON file to begin analysis.")
+    st.markdown(upload_css, unsafe_allow_html=True)
+    
+    with st.container():
+        st.markdown(
+            """
+            <div class="upload-container">
+                <div class="upload-card">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-title">VR Biofeedback Analysis</div>
+                    <div class="upload-subtitle">Upload a patient session to review</div>
+            """,
+            unsafe_allow_html=True
+        )
+        
+        uploaded_file = st.file_uploader(
+            "Choose a JSON session file",
+            type="json",
+            label_visibility="collapsed"
+        )
+        
+        st.markdown(
+            """
+                    <div class="upload-hint">
+                        <strong>Supported format:</strong> JSON session files exported from VR therapy system<br>
+                        Contains baseline metrics, exposure data, and event logs
+                    </div>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
-    uploaded_file = st.file_uploader("Choose a session file", type="json")
-
-    if uploaded_file is not None:
-        try:
-            data = json.load(uploaded_file)
-            st.session_state["session_data"] = data
-            st.session_state["session_name"] = uploaded_file.name
-            st.rerun()
-        except json.JSONDecodeError:
-            st.error("Invalid JSON file. Please upload a valid session file.")
+        if uploaded_file is not None:
+            try:
+                data = json.load(uploaded_file)
+                st.session_state["session_data"] = data
+                st.session_state["session_name"] = uploaded_file.name
+                st.success("✓ File loaded successfully. Opening dashboard...")
+                st.rerun()
+            except json.JSONDecodeError:
+                st.error("❌ Invalid JSON file. Please check the format and try again.")
     st.stop()
 
 # ── Analysis page ──────────────────────────────────────────────────────────────
@@ -33,13 +115,13 @@ with col_title:
     st.title("VR Biofeedback – Patient Session Dashboard")
     st.caption(f"File: {st.session_state['session_name']}")
 with col_btn:
-    st.write("")  # vertical alignment spacer
-    if st.button("Upload new file"):
+    st.write("")
+    if st.button("↻ Upload new file"):
         del st.session_state["session_data"]
         del st.session_state["session_name"]
         st.rerun()
 
-# ── Everything below is identical to your original code ───────────────────────
+# ── Everything else stays the same ─────────────────────────────────────────────
 baseline_df = pd.DataFrame(data.get("baselineMetrics", []))
 exposure_df = pd.DataFrame(data.get("metrics", []))
 events_df   = pd.DataFrame(data.get("events", []))
