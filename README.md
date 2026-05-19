@@ -283,5 +283,6 @@ plotly
 ---
 
 ## Authors
+Rawan Khalifeh, Fatima Taha, Mohammad Charaf, Alaa Abdullah Fouani.
 
-Developed as part of a graduation project in Computer Engineering.
+Developed as part of a graduation project in Computer and Communications Engineering, 2026.
